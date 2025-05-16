@@ -7,7 +7,7 @@ in
     enable = true;
     role = "agent";
     package = pkgs.k3s_1_28;
-    token = builtins.readFile "/run/agenix/k3s-token";
+    tokenFile = "/run/agenix/k3s-token";
     serverAddr = "https://192.168.2.2:6443";
     clusterInit = false;
     extraFlags = "--flannel-iface=eth0 --node-ip=${nodeIp}";
@@ -19,7 +19,7 @@ in
 
   virtualisation.containerd.enable = true;
 
-  environment.systemPackages = with pkgs; [ kubectl nfs-utils openiscsi jq dig gperftools ];
+  environment.systemPackages = with pkgs; [ kubectl nfs-utils openiscsi jq dig gperftools util-linux ];
 
   services.openiscsi = {
     enable = true;

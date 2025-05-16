@@ -3,5 +3,11 @@
 
   zramSwap.enable = true;
   zramSwap.memoryPercent = 150;
+
+  environment.systemPackages = with pkgs; [
+    neovim
+    vim
+    git
+  ];
 }
 

@@ -7,7 +7,7 @@ in
     enable = true;
     role = "server";
     package = pkgs.k3s_1_28;
-    token = builtins.readFile "/run/agenix/k3s-token";
+    tokenFile = "/run/agenix/k3s-token";
     serverAddr = "https://192.168.2.2:6443";
     clusterInit = false;
     extraFlags = "--flannel-iface=eth0 --node-ip=${nodeIp} --node-taint node-role.kubernetes.io/master=true:NoSchedule --tls-san 192.168.2.2 --disable servicelb --disable traefik";

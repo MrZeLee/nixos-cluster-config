@@ -7,7 +7,7 @@
     ../../modules/builder.nix
     ../../modules/users.nix
     ../../modules/networking.nix
-    ../../modules/k3s.nix
+    ../../modules/k3s_server.nix
     ../../secrets.nix
   ];
 
@@ -18,5 +18,7 @@
     address = "192.168.2.100";
     prefixLength = 23;
   }];
+
+  services.k3s.clusterInit = true;
 }
 

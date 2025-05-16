@@ -1,4 +1,8 @@
-{ config, lib, pkgs, ... }: {
+{ config, lib, pkgs, ... }:
+let
+  nodeIp = (lib.head config.networking.interfaces.eth0.ipv4.addresses).address;
+in
+{
   services.k3s = {
     enable = true;
     role = "agent";
@@ -6,7 +10,7 @@
     token = builtins.readFile "/run/agenix/k3s-token";
     serverAddr = "https://192.168.2.2:6443";
     clusterInit = false;
-    extraFlags = "--flannel-iface=eth0 --node-ip=${config.networking.interfaces.eth0.ipv4.addresses.[0].address}";
+    extraFlags = "--flannel-iface=eth0 --node-ip=${nodeIp}";
     extraKubeletConfig = {
       seccompDefault = true;
     };

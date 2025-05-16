@@ -7,7 +7,7 @@
     ../../modules/builder.nix
     ../../modules/users.nix
     ../../modules/networking.nix
-    ../../modules/k3s.nix
+    ../../modules/k3s_agent.nix
     ../../secrets.nix
   ];
 

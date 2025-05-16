@@ -3,6 +3,10 @@ let
   nodeIp = (lib.head config.networking.interfaces.eth0.ipv4.addresses).address;
 in
 {
+  nixpkgs.config.permittedInsecurePackages = [
+    "k3s-1.28.14+k3s1"
+  ];
+
   services.k3s = {
     enable = true;
     role = "agent";

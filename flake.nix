@@ -16,7 +16,7 @@
     let
       # Mapping of hostnames to architectures
       hosts = {
-        rasp0  = "aarch64-linux";
+        raspb0  = "aarch64-linux";
         raspb1 = "aarch64-linux";
         raspb2 = "aarch64-linux";
         raspb3 = "aarch64-linux";

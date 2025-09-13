@@ -30,4 +30,7 @@ in
   }];
 
   services.k3s.clusterInit = lib.mkForce true;
+
+  # Set temporary password for user mrzelee
+  users.users.mrzelee.initialPassword = "temporary123";
 }

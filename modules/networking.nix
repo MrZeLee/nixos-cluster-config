@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }: {
+{ config, lib, pkgs, networkInterface ? "eth0", ... }: {
   networking.usePredictableInterfaceNames = false;
   networking.useDHCP = false;
   networking.wireless.enable = false;
@@ -8,7 +8,7 @@
   # Default gateway can be overridden per-host
   networking.defaultGateway = lib.mkDefault {
     address = "192.168.2.1";
-    interface = "eth0";
+    interface = networkInterface;
   };
 }
 

@@ -1,5 +1,9 @@
 { config, pkgs, lib, name, ... }:
 
+let
+  # Network interface for this host
+  networkInterface = "eth0";
+in
 {
   imports = [
     ../../hardware/${name}.nix
@@ -13,8 +17,11 @@
 
   networking.hostName = name;
 
+  # Pass network interface to modules
+  _module.args.networkInterface = networkInterface;
+
   # Optional: if you want to override IP per-host
-  networking.interfaces.eth0.ipv4.addresses = [{
+  networking.interfaces.${networkInterface}.ipv4.addresses = [{
     address = "192.168.2.103";
     prefixLength = 23;
   }];

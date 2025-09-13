@@ -1,6 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, networkInterface ? "eth0", ... }:
 let
-  nodeIp = (lib.head config.networking.interfaces.eth0.ipv4.addresses).address;
+  nodeIp = (lib.head config.networking.interfaces.${networkInterface}.ipv4.addresses).address;
 in
 {
   # nixpkgs.config.permittedInsecurePackages = [
@@ -14,7 +14,7 @@ in
     tokenFile = "/run/agenix/k3s-token";
     serverAddr = "https://192.168.2.2:6443";
     clusterInit = false;
-    extraFlags = "--flannel-iface=eth0 --node-ip=${nodeIp} --node-taint node-role.kubernetes.io/master=true:NoSchedule --tls-san 192.168.2.2 --disable servicelb --disable traefik";
+    extraFlags = "--flannel-iface=${networkInterface} --node-ip=${nodeIp} --node-taint node-role.kubernetes.io/master=true:NoSchedule --tls-san 192.168.2.2 --disable servicelb --disable traefik";
     extraKubeletConfig = {
       seccompDefault = true;
     };

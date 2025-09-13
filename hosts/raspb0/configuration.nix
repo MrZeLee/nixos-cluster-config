@@ -3,7 +3,7 @@
 {
   imports = [
     ../../hardware/${name}.nix
-    ../../modules/pi5-os-check.nix
+    # ../../modules/pi5-os-check.nix
     ../../modules/base.nix
     ../../modules/builder.nix
     ../../modules/users.nix

@@ -28,15 +28,8 @@
   hardware.enableRedistributableFirmware = true;
 
   boot = {
-    loader = {
-      grub.enable = false;
-      generic-extlinux-compatible.enable = true;
-    };
-
     tmp.useTmpfs = true;
     tmp.tmpfsSize = "50%"; # Depends on the size of your storage.
-
-    kernelPackages = pkgs.linuxPackages_rpi4;
     blacklistedKernelModules = [ "sun4i-drm" "drm" "drm_kms_helper" ];
     initrd.availableKernelModules = [ "xhci_pci" "uas" ];
     initrd.kernelModules = [ ];

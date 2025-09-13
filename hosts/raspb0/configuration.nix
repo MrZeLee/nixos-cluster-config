@@ -16,7 +16,6 @@ in
     ../../secrets.nix
   ] ++ (with nixos-raspberrypi.nixosModules; [
     raspberry-pi-5.base
-    raspberry-pi-5.bluetooth
   ]);
 
   networking.hostName = name;

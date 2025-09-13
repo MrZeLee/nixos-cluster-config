@@ -2,7 +2,7 @@
 
 let
   # Network interface for this host
-  networkInterface = "end0";
+  networkInterface = "eth0";
 in
 {
   imports = [

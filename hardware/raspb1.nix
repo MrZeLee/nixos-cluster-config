@@ -10,7 +10,7 @@
   ];
 
   fileSystems."/" = {
-    device = "/dev/disk/by-uuid/44444444-4444-4444-8888-888888888888";
+    device = lib.mkForce "/dev/disk/by-uuid/44444444-4444-4444-8888-888888888888";
     fsType = "ext4";
   };
 
@@ -56,15 +56,7 @@
 
   };
 
-  # hardware.enableRedistributableFirmware = true;
-
-  # fileSystems."/" =
-  #   { device = lib.mkDefault "/dev/disk/by-uuid/44444444-4444-4444-8888-888888888888";
-  #     fsType = "ext4";
-  #   };
-
   swapDevices = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "aarch64-linux";
-  # powerManagement.cpuFreqGovernor = lib.mkDefault "ondemand";
 }

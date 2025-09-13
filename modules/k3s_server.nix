@@ -3,14 +3,14 @@ let
   nodeIp = (lib.head config.networking.interfaces.eth0.ipv4.addresses).address;
 in
 {
-  nixpkgs.config.permittedInsecurePackages = [
-    "k3s-1.28.14+k3s1"
-  ];
+  # nixpkgs.config.permittedInsecurePackages = [
+  #   "k3s-1.30.14+k3s1"
+  # ];
 
   services.k3s = {
     enable = true;
     role = "server";
-    package = pkgs.k3s_1_28;
+    package = pkgs.k3s_1_33;
     tokenFile = "/run/agenix/k3s-token";
     serverAddr = "https://192.168.2.2:6443";
     clusterInit = false;

@@ -29,7 +29,11 @@ in
     prefixLength = 23;
   }];
 
-  services.k3s.clusterInit = lib.mkForce true;
+  services.k3s = {
+    clusterInit = lib.mkForce true;
+    serverAddr = lib.mkForce "";
+  };
+
 
   # Set temporary password for user mrzelee
   users.users.mrzelee.initialPassword = "temporary123";

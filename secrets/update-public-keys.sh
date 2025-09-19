@@ -35,7 +35,7 @@ for dir in "$HOSTS_DIR"/*; do
 
   echo "Fetching SSH host key for $host ($ip)..."
 
-  key=$(ssh-keyscan -t ed25519 "$ip" 2>/dev/null | awk "/^$ip/ { print \$2 \" \" \$3 }")
+  key=$(ssh-keyscan -t ed25519 "$ip" 2>/dev/null | awk "/^$ip/ { print \$2 \" \" \$3 }" || true)
   if [[ -z "$key" ]]; then
     echo "Warning: could not get key for $host ($ip)"
     continue

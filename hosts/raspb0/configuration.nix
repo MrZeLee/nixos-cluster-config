@@ -13,6 +13,7 @@ in
     ../../modules/users.nix
     ../../modules/networking.nix
     ../../modules/k3s_server.nix
+    ../../modules/k3s_server_metallb.nix
     ../../secrets.nix
   ] ++ (with nixos-raspberrypi.nixosModules; [
     raspberry-pi-5.base

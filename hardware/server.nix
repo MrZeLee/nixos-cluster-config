@@ -9,7 +9,7 @@
     ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];
-  boot.initrd.kernelModules = [ ];
+  boot.initrd.kernelModules = [ "raid1" ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
@@ -23,6 +23,20 @@
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
     };
+
+  # RAID 1 array for data storage using the existing two 3.6TB SSDs
+  boot.swraid = {
+    enable = true;
+    mdadmConf = ''
+      ARRAY /dev/md0 UUID=e9f16fd6-efdb-e91b-15d6-492adf0bb3a4
+    '';
+  };
+
+  fileSystems."/data" = {
+    device = "/dev/md0";
+    fsType = "ext4";
+    options = [ "defaults" "noatime" ];
+  };
 
   swapDevices = [ ];
 

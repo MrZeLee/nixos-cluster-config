@@ -6,6 +6,7 @@ in
 {
   imports = [
     ./k3s_server_kube-vip.nix
+    ./k3s_server_fleet.nix
   ];
   # nixpkgs.config.permittedInsecurePackages = [
   #   "k3s-1.30.14+k3s1"

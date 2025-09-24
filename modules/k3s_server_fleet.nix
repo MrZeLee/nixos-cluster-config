@@ -3,7 +3,7 @@
 {
   # Install Fleet using Helm chart
   services.k3s.autoDeployCharts = {
-    "03-fleet-crd" = {
+    fleet-crd = {
       enable = true;
       name = "fleet-crd";
       version = "0.13.2";
@@ -13,7 +13,7 @@
       hash = "sha256-CRbUL/FRB5cYO+U8g4m2PKsFRVCHdGFOvijB9wpQmok=";
     };
 
-    "04-fleet" = {
+    fleet = {
       enable = true;
       name = "fleet";
       version = "0.13.2";
@@ -77,8 +77,8 @@
         spec:
           repo: https://github.com/MrZeLee/cluster-tese
           branch: main
-          paths:
-          - .
+          # paths:
+          # - .
           pollingInterval: 30s
           clientSecretName: basic-auth-secret
       '';

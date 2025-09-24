@@ -3,7 +3,7 @@
 {
   # Install Fleet using Helm chart
   services.k3s.autoDeployCharts = {
-    fleet-crd = {
+    "03-fleet-crd" = {
       enable = true;
       name = "fleet-crd";
       version = "0.13.2";
@@ -13,7 +13,7 @@
       hash = "sha256-CRbUL/FRB5cYO+U8g4m2PKsFRVCHdGFOvijB9wpQmok=";
     };
 
-    fleet = {
+    "04-fleet" = {
       enable = true;
       name = "fleet";
       version = "0.13.2";
@@ -34,7 +34,7 @@
   services.k3s.manifests = {
     fleet-github-secret = {
       source = pkgs.runCommand "fleet-github-secret.yaml" {} ''
-        cat > $out << 'EOF'
+        cat > $out << EOF
         apiVersion: v1
         kind: Secret
         metadata:
@@ -53,7 +53,7 @@
         apiVersion: fleet.cattle.io/v1alpha1
         kind: GitRepo
         metadata:
-          name: Cluster-Tese
+          name: cluster-tese
           namespace: fleet-local
         spec:
           repo: https://github.com/MrZeLee/cluster-tese

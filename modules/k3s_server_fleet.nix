@@ -79,7 +79,7 @@
           branch: main
           # paths:
           # - .
-          pollingInterval: 30s
+          pollingInterval: 120s
           clientSecretName: basic-auth-secret
       '';
     };

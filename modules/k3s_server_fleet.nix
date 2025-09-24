@@ -3,14 +3,25 @@
 {
   # Install Fleet using Helm chart
   services.k3s.autoDeployCharts = {
-    fleet = {
+    fleet-crd = {
       enable = true;
-      name = "fleet";
-      version = "0.9.4";
+      name = "fleet-crd";
+      version = "0.13.2";
       repo = "https://rancher.github.io/fleet-helm-charts/";
       targetNamespace = "cattle-fleet-system";
       createNamespace = true;
-      hash = "sha256-o18E3O1kHt+lY6Voww5sEoP/hlX71w+SUCP/GunIrr0=";
+      hash = "sha256-CRbUL/FRB5cYO+U8g4m2PKsFRVCHdGFOvijB9wpQmok=";
+    };
+
+    fleet = {
+      enable = true;
+      name = "fleet";
+      version = "0.13.2";
+      repo = "https://rancher.github.io/fleet-helm-charts/";
+      targetNamespace = "cattle-fleet-system";
+      createNamespace = true;
+      dependsOn = [ "fleet-crd" ];
+      hash = "sha256-geFseQCamuv75aeYfYgkWDDE1RY/oi8eTDP60FFcvHY=";
       values = {
         # Fleet configuration values
         gitops = {

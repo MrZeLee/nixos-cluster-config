@@ -29,7 +29,7 @@ in
 
   virtualisation.containerd.enable = true;
 
-  services.etcd.enable = true;
+  services.etcd.enable = false;
 
   # environment.systemPackages = with pkgs; [ kubectl nfs-utils openiscsi jq dig gperftools ];
   #

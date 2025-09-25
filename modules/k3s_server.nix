@@ -13,7 +13,7 @@ in
   # ];
 
   services.k3s = {
-    enable = true;
+    enable = false;
     role = "server";
     package = pkgs.k3s_1_33;
     tokenFile = "/run/agenix/k3s-token";

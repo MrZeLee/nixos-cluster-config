@@ -16,6 +16,7 @@
   nix.settings = {
     trusted-users = [ "mrzelee" ];
     builders-use-substitutes = true;
+    experimental-features = ["nix-command" "flakes"];
   };
 
   nix = {

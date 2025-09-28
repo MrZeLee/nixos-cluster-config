@@ -21,6 +21,20 @@ in
 
   networking.hostName = name;
 
+  # NVIDIA GPU support for headless compute
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    powerManagement.finegrained = false;
+    open = false; # Use proprietary driver
+    nvidiaSettings = false; # No GUI needed
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
+
+  # NVIDIA Container Toolkit for K8s/Docker workloads
+  hardware.nvidia-container-toolkit.enable = true;
+
   # Pass network interface to modules
   _module.args.networkInterface = networkInterface;
 

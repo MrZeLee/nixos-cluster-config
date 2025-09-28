@@ -21,6 +21,12 @@ in
 
   networking.hostName = name;
 
+  # Enable graphics support for AMD integrated GPU
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
   # Pass network interface to modules
   _module.args.networkInterface = networkInterface;
 

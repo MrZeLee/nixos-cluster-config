@@ -21,8 +21,11 @@ in
 
   networking.hostName = name;
 
+  # Allow unfree packages for NVIDIA drivers
+  nixpkgs.config.allowUnfree = true;
+
   # NVIDIA GPU support for headless compute
-  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.graphics.enable = true;
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = false;
@@ -34,6 +37,9 @@ in
 
   # NVIDIA Container Toolkit for K8s/Docker workloads
   hardware.nvidia-container-toolkit.enable = true;
+
+  # Load NVIDIA driver explicitly for headless
+  boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
 
   # Pass network interface to modules
   _module.args.networkInterface = networkInterface;

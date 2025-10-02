@@ -58,7 +58,7 @@ in
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia"]
       runtime_type = "io.containerd.runc.v2"
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia".options]
-      BinaryName = "${unstable.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime"
+      BinaryName = "${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime"
   '';
 
   # Pass network interface to modules

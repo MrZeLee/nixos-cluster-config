@@ -45,6 +45,17 @@ in
   # Load NVIDIA driver explicitly for headless
   boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
 
+  services.k3s.containerdConfigTemplate = ''
+    # Base K3s config
+    {{ template "base" . }}
+
+    # Add NVIDIA runtime
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia"]
+      runtime_type = "io.containerd.runc.v2"
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia".options]
+      BinaryName = "${pkgs.nvidia-container-toolkit}/bin/nvidia-container-runtime"
+  '';
+
   # Pass network interface to modules
   _module.args.networkInterface = networkInterface;
 

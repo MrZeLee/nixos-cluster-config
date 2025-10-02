@@ -26,6 +26,7 @@ in
 
   # NVIDIA GPU support for headless compute
   hardware.graphics.enable = true;
+  services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = false;
@@ -34,9 +35,6 @@ in
     nvidiaSettings = false; # No GUI needed
     package = config.boot.kernelPackages.nvidiaPackages.stable;
     nvidiaPersistenced = true;
-    datacenter = {
-      enable = true;
-    };
   };
 
   # NVIDIA Container Toolkit for K8s/Docker workloads

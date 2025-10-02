@@ -1,4 +1,4 @@
-{ config, pkgs, lib, name, unstable, ... }:
+{ config, pkgs, lib, name, ... }:
 
 let
   # Network interface for this host
@@ -40,13 +40,13 @@ in
   # NVIDIA Container Toolkit for K8s/Docker workloads
   hardware.nvidia-container-toolkit = {
     enable = true;
-    package = unstable.nvidia-container-toolkit;
+    package = pkgs.unstable.nvidia-container-toolkit;
   };
 
   # Load NVIDIA driver explicitly for headless
   boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
 
-  environment.systemPackages = [
+  environment.systemPackages = with pkgs;[
     unstable.nvidia-container-toolkit
   ];
 
@@ -58,7 +58,7 @@ in
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia"]
       runtime_type = "io.containerd.runc.v2"
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia".options]
-      BinaryName = "${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime"
+      BinaryName = "${pkgs.unstable.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime"
   '';
 
   # Pass network interface to modules

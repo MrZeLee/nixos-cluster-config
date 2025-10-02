@@ -8,7 +8,10 @@ let
     url = "https://github.com/NixOS/nixpkgs/archive/b3f6388b859981ef686ed8992131a2d0844aa8a1.tar.gz";
     sha256 = "sha256:0i7qq631xn4r0gzs0p0f7r51n76pj7gsa1hfizns27yyr1ibapnx";
   };
-  pkgs-1176 = import nixpkgs-1176 { };
+  pkgs-1176 = import nixpkgs-1176 { 
+    system = pkgs.stdenv.hostPlatform.system;
+    config = config.nixpkgs.config;
+  };
 in
 {
   imports = [

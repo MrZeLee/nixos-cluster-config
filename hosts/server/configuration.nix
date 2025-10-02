@@ -34,6 +34,9 @@ in
     nvidiaSettings = false; # No GUI needed
     package = config.boot.kernelPackages.nvidiaPackages.stable;
     nvidiaPersistenced = true;
+    datacenter = {
+      enable = true;
+    };
   };
 
   # NVIDIA Container Toolkit for K8s/Docker workloads

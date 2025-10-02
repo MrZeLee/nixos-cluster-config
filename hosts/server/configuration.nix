@@ -33,10 +33,14 @@ in
     open = false; # Use proprietary driver
     nvidiaSettings = false; # No GUI needed
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+    nvidiaPersistenced = true;
   };
 
   # NVIDIA Container Toolkit for K8s/Docker workloads
-  hardware.nvidia-container-toolkit.enable = true;
+  hardware.nvidia-container-toolkit = {
+    enable = true;
+    suppressNvidiaDriverAssertion = true;
+  };
 
   # Load NVIDIA driver explicitly for headless
   boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];

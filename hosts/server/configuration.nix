@@ -40,6 +40,7 @@ in
   # NVIDIA Container Toolkit for K8s/Docker workloads
   hardware.nvidia-container-toolkit = {
     enable = true;
+    package = pkgs.nvidia-container-toolkit;
   };
 
   # Load NVIDIA driver explicitly for headless

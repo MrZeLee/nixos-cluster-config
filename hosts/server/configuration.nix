@@ -3,15 +3,6 @@
 let
   # Network interface for this host
   networkInterface = "eth0";
-  # Pin to nixpkgs commit with nvidia-container-toolkit 1.17.6
-  nixpkgs-1176 = fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/b3f6388b859981ef686ed8992131a2d0844aa8a1.tar.gz";
-    sha256 = "sha256:0i7qq631xn4r0gzs0p0f7r51n76pj7gsa1hfizns27yyr1ibapnx";
-  };
-  pkgs-1176 = import nixpkgs-1176 { 
-    system = pkgs.stdenv.hostPlatform.system;
-    config = config.nixpkgs.config;
-  };
 in
 {
   imports = [
@@ -49,14 +40,13 @@ in
   # NVIDIA Container Toolkit for K8s/Docker workloads
   hardware.nvidia-container-toolkit = {
     enable = true;
-    package = pkgs-1176.nvidia-container-toolkit;
   };
 
   # Load NVIDIA driver explicitly for headless
   boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
 
-  environment.systemPackages = [
-    pkgs-1176.nvidia-container-toolkit
+  environment.systemPackages = with pkgs; [
+    nvidia-container-toolkit
   ];
 
   services.k3s.containerdConfigTemplate = ''
@@ -67,7 +57,7 @@ in
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia"]
       runtime_type = "io.containerd.runc.v2"
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia".options]
-      BinaryName = "${pkgs-1176.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime.legacy"
+      BinaryName = "${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime"
   '';
 
   # Pass network interface to modules

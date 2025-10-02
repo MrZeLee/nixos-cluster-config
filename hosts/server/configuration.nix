@@ -3,6 +3,11 @@
 let
   # Network interface for this host
   networkInterface = "eth0";
+  # Get packages from unstable for newer libnvidia-container
+  unstable = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {
+    system = pkgs.stdenv.hostPlatform.system;
+    config = config.nixpkgs.config;
+  };
 in
 {
   imports = [
@@ -40,6 +45,9 @@ in
   # NVIDIA Container Toolkit for K8s/Docker workloads
   hardware.nvidia-container-toolkit = {
     enable = true;
+    package = pkgs.nvidia-container-toolkit.override {
+      libnvidia-container = unstable.libnvidia-container;
+    };
   };
 
   # Load NVIDIA driver explicitly for headless
@@ -57,7 +65,7 @@ in
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia"]
       runtime_type = "io.containerd.runc.v2"
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia".options]
-      BinaryName = "${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime"
+      BinaryName = "${(pkgs.nvidia-container-toolkit.override { libnvidia-container = unstable.libnvidia-container; }).tools}/bin/nvidia-container-runtime"
   '';
 
   # Pass network interface to modules

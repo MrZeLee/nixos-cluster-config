@@ -45,6 +45,10 @@ in
   # Load NVIDIA driver explicitly for headless
   boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
 
+  environment.systemPackages = with pkgs; [
+    nvidia-container-toolkit
+  ];
+
   services.k3s.containerdConfigTemplate = ''
     # Base K3s config
     {{ template "base" . }}

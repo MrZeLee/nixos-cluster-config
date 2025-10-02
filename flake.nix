@@ -72,6 +72,7 @@
             inherit nixos-hardware name;
           };
           modules = [
+            ({config, pkgs, ...}: { nixpkgs.overlays = overlays; })
             ./hosts/${name}/configuration.nix
             agenix.nixosModules.default
           ];
@@ -97,7 +98,7 @@
         inherit nixos-hardware name inputs;
       };
       modules = [
-        ({config, pkgs, ...}: { nixpkgs.overlays = overlays; })
+        ({config, pkgs, inputs, ...}: { nixpkgs.overlays = overlays; })
         ./hosts/${name}/configuration.nix
         agenix.nixosModules.default
       ];

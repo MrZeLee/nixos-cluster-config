@@ -21,6 +21,7 @@
       # (following our nixpkgs causes an option conflict on 25.05).
       # inputs.nixpkgs.follows = "nixpkgs";
     };
+    unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
   nixConfig = {
@@ -69,6 +70,7 @@
           inherit (attrs) system;
           specialArgs = {
             inherit nixos-hardware name;
+            inherit (inputs) unstable;
           };
           modules = [
             ./hosts/${name}/configuration.nix

@@ -12,6 +12,7 @@ in
     ../../modules/users.nix
     ../../modules/networking.nix
     ../../modules/k3s_agent.nix
+    ../../modules/tailscale.nix
     ../../secrets.nix
   ];
 

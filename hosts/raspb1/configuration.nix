@@ -25,5 +25,10 @@ in
     address = "192.168.2.101";
     prefixLength = 23;
   }];
+
+  services.k3s = {
+    clusterInit = lib.mkForce true;
+    serverAddr = lib.mkForce "";
+  };
 }
 

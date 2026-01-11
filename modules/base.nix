@@ -18,5 +18,6 @@
     neovim
     vim
     git
+    fastfetch
   ];
 }

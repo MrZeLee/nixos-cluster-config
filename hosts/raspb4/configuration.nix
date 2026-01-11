@@ -11,7 +11,7 @@ in
     ../../modules/builder.nix
     ../../modules/users.nix
     ../../modules/networking.nix
-    ../../modules/k3s_agent.nix
+    ../../modules/k3s_server.nix
     ../../secrets.nix
   ];
 

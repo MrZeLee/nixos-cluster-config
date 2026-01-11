@@ -20,7 +20,7 @@
       repo = "https://rancher.github.io/fleet-helm-charts/";
       targetNamespace = "cattle-fleet-system";
       createNamespace = true;
-      hash = "sha256-geFseQCamuv75aeYfYgkWDDE1RY/oi8eTDP60FFcvHY=";
+      hash = "sha256-ypho/zletI9GVcBQ95KU01Z4N2a9Cupr4a14zJ92c9c=";
       values = {
         # Fleet configuration values
         gitops = {

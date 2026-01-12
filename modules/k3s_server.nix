@@ -29,17 +29,17 @@ in
 
   virtualisation.containerd.enable = true;
 
-  # environment.systemPackages = with pkgs; [ kubectl nfs-utils openiscsi jq dig gperftools ];
-  #
-  # services.openiscsi = {
-  #   enable = true;
-  #   name = "${config.networking.hostName}-initiatorhost";
-  # };
+  environment.systemPackages = with pkgs; [ kubectl nfs-utils openiscsi jq dig gperftools util-linux ];
+
+  services.openiscsi = {
+    enable = true;
+    name = "${config.networking.hostName}-initiatorhost";
+  };
 
   systemd.tmpfiles.rules = [
     "L+ /usr/local/bin - - - - /run/current-system/sw/bin/"
   ];
 
-  # boot.supportedFilesystems = [ "nfs" ];
-  # services.rpcbind.enable = true;
+  boot.supportedFilesystems = [ "nfs" ];
+  services.rpcbind.enable = true;
 }

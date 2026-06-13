@@ -105,6 +105,10 @@
           system = "x86_64-linux";
           format = "sd-x86_64-installer";
         };
+        n5pro = {
+          system = "x86_64-linux";
+          format = "sd-x86_64-installer";
+        };
       };
 
       mkHost =

@@ -1,4 +1,8 @@
-{ config, pkgs, lib, name, ... }:
+{
+  pkgs,
+  name,
+  ...
+}:
 
 let
   # Network interface for this host
@@ -26,7 +30,7 @@ in
     enable = true;
     enable32Bit = true;
     extraPackages = with pkgs; [
-      amdvlk        # Vulkan driver
+      amdvlk # Vulkan driver
       rocm-opencl-icd # OpenCL support
     ];
   };
@@ -46,10 +50,10 @@ in
   _module.args.networkInterface = networkInterface;
 
   # Optional: if you want to override IP per-host
-  networking.interfaces.${networkInterface}.ipv4.addresses = [{
-    address = "192.168.2.108";
-    prefixLength = 23;
-  }];
+  networking.interfaces.${networkInterface}.ipv4.addresses = [
+    {
+      address = "192.168.2.108";
+      prefixLength = 23;
+    }
+  ];
 }
-
-

@@ -1,4 +1,7 @@
-{ config, lib, pkgs, networkInterface ? "eth0", ... }:
+{
+  pkgs,
+  ...
+}:
 
 {
   services.k3s.manifests = {

@@ -1,4 +1,9 @@
-{ config, pkgs, lib, name, nixos-raspberrypi, ... }:
+{
+  lib,
+  name,
+  nixos-raspberrypi,
+  ...
+}:
 
 let
   # Network interface for this host
@@ -15,7 +20,8 @@ in
     ../../modules/k3s_server.nix
     ../../modules/k3s_server_metallb.nix
     ../../secrets.nix
-  ] ++ (with nixos-raspberrypi.nixosModules; [
+  ]
+  ++ (with nixos-raspberrypi.nixosModules; [
     raspberry-pi-5.base
   ]);
 
@@ -25,10 +31,12 @@ in
   _module.args.networkInterface = networkInterface;
 
   # Optional: if you want to override IP per-host
-  networking.interfaces.${networkInterface}.ipv4.addresses = [{
-    address = "192.168.2.100";
-    prefixLength = 23;
-  }];
+  networking.interfaces.${networkInterface}.ipv4.addresses = [
+    {
+      address = "192.168.2.100";
+      prefixLength = 23;
+    }
+  ];
 
   services.k3s = {
     clusterInit = lib.mkForce true;

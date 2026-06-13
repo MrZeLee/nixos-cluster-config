@@ -1,5 +1,9 @@
 # Hardware configuration for Raspberry Pi 5 using nixos-raspberrypi
-{ config, lib, pkgs, modulesPath, ... }:
+{
+  lib,
+  modulesPath,
+  ...
+}:
 
 {
   imports = [
@@ -30,18 +34,27 @@
   boot = {
     tmp.useTmpfs = true;
     tmp.tmpfsSize = "50%"; # Depends on the size of your storage.
-    blacklistedKernelModules = [ "sun4i-drm" "drm" "drm_kms_helper" ];
-    initrd.availableKernelModules = [ "xhci_pci" "uas" ];
+    blacklistedKernelModules = [
+      "sun4i-drm"
+      "drm"
+      "drm_kms_helper"
+    ];
+    initrd.availableKernelModules = [
+      "xhci_pci"
+      "uas"
+    ];
     initrd.kernelModules = [ ];
-    kernelModules = [ "br_netfilter"
-                      "ip_conntrack"
-                      "ip_vs"
-                      "ip_vs_rr"
-                      "ip_vs_wrr"
-                      "ip_vs_sh"
-                      "overlay"
-                      "nfs"
-                      "iscsi_tcp" ];
+    kernelModules = [
+      "br_netfilter"
+      "ip_conntrack"
+      "ip_vs"
+      "ip_vs_rr"
+      "ip_vs_wrr"
+      "ip_vs_sh"
+      "overlay"
+      "nfs"
+      "iscsi_tcp"
+    ];
     extraModulePackages = [ ];
 
     # Add kernel parameters to enable cgroup v2

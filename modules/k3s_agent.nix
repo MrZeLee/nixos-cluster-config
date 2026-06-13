@@ -1,4 +1,10 @@
-{ config, lib, pkgs, networkInterface ? "eth0", ... }:
+{
+  config,
+  lib,
+  pkgs,
+  networkInterface ? "eth0",
+  ...
+}:
 let
   nodeIp = (lib.head config.networking.interfaces.${networkInterface}.ipv4.addresses).address;
 in
@@ -23,7 +29,15 @@ in
 
   virtualisation.containerd.enable = true;
 
-  environment.systemPackages = with pkgs; [ kubectl nfs-utils openiscsi jq dig gperftools util-linux ];
+  environment.systemPackages = with pkgs; [
+    kubectl
+    nfs-utils
+    openiscsi
+    jq
+    dig
+    gperftools
+    util-linux
+  ];
 
   services.openiscsi = {
     enable = true;
@@ -37,4 +51,3 @@ in
   boot.supportedFilesystems = [ "nfs" ];
   services.rpcbind.enable = true;
 }
-

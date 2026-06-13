@@ -1,4 +1,9 @@
-{ config, pkgs, lib, name, ... }:
+{
+  config,
+  pkgs,
+  name,
+  ...
+}:
 
 let
   # Network interface for this host
@@ -45,7 +50,12 @@ in
   };
 
   # Load NVIDIA driver explicitly for headless
-  boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
+  boot.kernelModules = [
+    "nvidia"
+    "nvidia_modeset"
+    "nvidia_uvm"
+    "nvidia_drm"
+  ];
 
   environment.systemPackages = with pkgs; [
     unstable.nvidia-container-toolkit
@@ -67,10 +77,10 @@ in
   _module.args.networkInterface = networkInterface;
 
   # Optional: if you want to override IP per-host
-  networking.interfaces.${networkInterface}.ipv4.addresses = [{
-    address = "192.168.2.107";
-    prefixLength = 23;
-  }];
+  networking.interfaces.${networkInterface}.ipv4.addresses = [
+    {
+      address = "192.168.2.107";
+      prefixLength = 23;
+    }
+  ];
 }
-
-

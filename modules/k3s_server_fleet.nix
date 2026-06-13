@@ -1,4 +1,8 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  pkgs,
+  ...
+}:
 
 {
   # Install Fleet using Helm chart
@@ -41,16 +45,16 @@
       ExecStart = pkgs.writeShellScript "create-fleet-github-secret" ''
         set -e
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-        
+
         # Wait for k3s to be ready
         echo "Waiting for k3s to be ready..."
         until ${pkgs.k3s}/bin/kubectl get nodes >/dev/null 2>&1; do
           sleep 5
         done
-        
+
         # Create fleet-local namespace
         ${pkgs.k3s}/bin/kubectl create namespace fleet-local --dry-run=client -o yaml | ${pkgs.k3s}/bin/kubectl apply -f -
-        
+
         # Read token and create secret
         TOKEN=$(cat ${config.age.secrets.github-token.path})
         ${pkgs.k3s}/bin/kubectl create secret generic basic-auth-secret \
@@ -59,7 +63,7 @@
           --from-literal=password="$TOKEN" \
           --type=kubernetes.io/basic-auth \
           --dry-run=client -o yaml | ${pkgs.k3s}/bin/kubectl apply -f -
-        
+
         echo "Fleet GitHub secret created successfully"
       '';
     };

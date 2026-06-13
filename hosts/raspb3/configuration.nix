@@ -1,4 +1,7 @@
-{ config, pkgs, lib, name, ... }:
+{
+  name,
+  ...
+}:
 
 let
   # Network interface for this host
@@ -21,9 +24,10 @@ in
   _module.args.networkInterface = networkInterface;
 
   # Optional: if you want to override IP per-host
-  networking.interfaces.${networkInterface}.ipv4.addresses = [{
-    address = "192.168.2.103";
-    prefixLength = 23;
-  }];
+  networking.interfaces.${networkInterface}.ipv4.addresses = [
+    {
+      address = "192.168.2.103";
+      prefixLength = 23;
+    }
+  ];
 }
-

@@ -1,4 +1,7 @@
-{ config, lib, pkgs, ... }:
+{
+  pkgs,
+  ...
+}:
 
 {
   services.k3s.manifests = {
@@ -1943,7 +1946,7 @@
 
       '';
     };
-    
+
     metallb-config = {
       source = pkgs.writeText "metallb-config.yaml" ''
         apiVersion: metallb.io/v1beta1

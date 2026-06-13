@@ -1,4 +1,5 @@
-{ pkgs, lib, ... }: {
+{ pkgs, lib, ... }:
+{
   system.stateVersion = "24.05";
 
   zramSwap.enable = true;

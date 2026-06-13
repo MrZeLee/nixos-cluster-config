@@ -25,25 +25,20 @@ in
 
   networking.hostName = name;
 
-  # Enable graphics support for AMD integrated GPU
+  # Enable graphics support for AMD integrated GPU (Vulkan + ROCm/OpenCL)
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
     extraPackages = with pkgs; [
-      amdvlk # Vulkan driver
-      rocm-opencl-icd # OpenCL support
+      amdvlk
+      rocmPackages.clr.icd
+      rocmPackages.rocm-runtime
     ];
   };
 
   # Enable ROCm for AMD GPU compute workloads
   systemd.tmpfiles.rules = [
-    "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocm-runtime}"
-  ];
-
-  # AMD GPU device access for containers
-  hardware.graphics.extraPackages = with pkgs; [
-    rocm-opencl-icd
-    rocm-runtime
+    "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.rocm-runtime}"
   ];
 
   # Pass network interface to modules

@@ -26,8 +26,8 @@ in
   # Optional: if you want to override IP per-host
   networking.interfaces.${networkInterface}.ipv4.addresses = [
     {
-      address = "192.168.2.103";
-      prefixLength = 23;
+      address = "192.168.1.103";
+      prefixLength = 24;
     }
   ];
 }

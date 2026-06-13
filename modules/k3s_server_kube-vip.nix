@@ -1,5 +1,6 @@
 {
   pkgs,
+  k3sVip,
   ...
 }:
 
@@ -103,7 +104,7 @@
                 - name: vip_retryperiod
                   value: "2"
                 - name: address
-                  value: "192.168.2.2"
+                  value: "${k3sVip}"
                 image: ghcr.io/kube-vip/kube-vip:v0.8.7
                 imagePullPolicy: Always
                 name: kube-vip

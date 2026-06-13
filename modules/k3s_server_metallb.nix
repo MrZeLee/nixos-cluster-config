@@ -1956,7 +1956,7 @@
           namespace: metallb-system
         spec:
           addresses:
-          - 192.168.2.10-192.168.2.99
+          - 192.168.1.10-192.168.1.99
         ---
         apiVersion: metallb.io/v1beta1
         kind: L2Advertisement

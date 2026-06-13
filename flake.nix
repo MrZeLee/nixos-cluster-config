@@ -53,6 +53,9 @@
       ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
 
+      gateway = "192.168.1.1";
+      k3sVip = "192.168.1.2";
+
       preCommitFor =
         system:
         git-hooks.lib.${system}.run {
@@ -109,7 +112,7 @@
         if name == "raspb0" then
           nixos-raspberrypi.lib.nixosSystem {
             specialArgs = inputs // {
-              inherit name;
+              inherit name gateway k3sVip;
             };
             modules = [
               ./hosts/${name}/configuration.nix
@@ -120,7 +123,12 @@
           nixpkgs.lib.nixosSystem {
             inherit (attrs) system;
             specialArgs = {
-              inherit nixos-hardware name;
+              inherit
+                nixos-hardware
+                name
+                gateway
+                k3sVip
+                ;
             };
             modules = [
               (_: {
@@ -149,7 +157,13 @@
           system = attrs.system;
           format = attrs.format;
           specialArgs = {
-            inherit nixos-hardware name inputs;
+            inherit
+              nixos-hardware
+              name
+              inputs
+              gateway
+              k3sVip
+              ;
           };
           modules = [
             (_: {

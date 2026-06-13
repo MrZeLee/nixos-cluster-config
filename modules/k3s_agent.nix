@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  k3sVip,
   networkInterface ? "eth0",
   ...
 }:
@@ -18,7 +19,7 @@ in
     role = "agent";
     package = pkgs.k3s_1_33;
     tokenFile = "/run/agenix/k3s-token";
-    serverAddr = "https://192.168.2.2:6443";
+    serverAddr = "https://${k3sVip}:6443";
     clusterInit = false;
     extraFlags = "--flannel-iface=${networkInterface} --node-ip=${nodeIp}";
     extraKubeletConfig = {

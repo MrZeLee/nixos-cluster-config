@@ -1,5 +1,6 @@
 {
   lib,
+  gateway,
   networkInterface ? "eth0",
   ...
 }:
@@ -15,7 +16,7 @@
 
   # Default gateway can be overridden per-host
   networking.defaultGateway = lib.mkDefault {
-    address = "192.168.2.1";
+    address = gateway;
     interface = networkInterface;
   };
 }

@@ -76,6 +76,9 @@ in
   # Pass network interface to modules
   _module.args.networkInterface = networkInterface;
 
+  # Act as Tailscale exit node for the cluster
+  services.tailscale.useRoutingFeatures = "server";
+
   # Optional: if you want to override IP per-host
   networking.interfaces.${networkInterface}.ipv4.addresses = [
     {

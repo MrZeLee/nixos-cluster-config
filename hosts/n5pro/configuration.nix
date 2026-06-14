@@ -1,11 +1,15 @@
 {
+  lib,
   pkgs,
   name,
   ...
 }:
 
 let
-  # Network interface for this host - adjust if needed
+  # Stable onboard NIC name. n5pro overrides the cluster-wide
+  # usePredictableInterfaceNames = false (see below) so this resolves to a
+  # real interface; if `eno1` turns out wrong after deploy, check
+  # `ip -br link` and adjust (likely `enpXsY`).
   networkInterface = "eno1";
 in
 {
@@ -32,10 +36,14 @@ in
   # Pass network interface to modules
   _module.args.networkInterface = networkInterface;
 
+  # n5pro is x86 with onboard NIC; use stable kernel names so the static IP
+  # binds reliably across reboots. Overrides modules/networking.nix.
+  networking.usePredictableInterfaceNames = lib.mkForce true;
+
   # Configure specific IP for n5pro
   networking.interfaces.${networkInterface}.ipv4.addresses = [
     {
-      address = "192.168.1.109";  # Adjust this IP as needed
+      address = "192.168.1.109";
       prefixLength = 24;
     }
   ];

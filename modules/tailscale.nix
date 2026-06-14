@@ -1,12 +1,27 @@
-{ lib, ... }:
+{ lib, config, ... }:
+let
+  routing = config.services.tailscale.useRoutingFeatures;
+  isExitNode = routing == "server" || routing == "both";
+in
 {
-  # Enable Tailscale VPN
+  # Enable Tailscale VPN. Default role is plain "client"; set
+  # `services.tailscale.useRoutingFeatures = "server"` (or "both") in a host
+  # to act as an exit node (adds --advertise-exit-node, uses MagicDNS).
   services.tailscale = {
     enable = true;
-    useRoutingFeatures = "server";
-    extraSetFlags = [ "--advertise-exit-node" ];
+    useRoutingFeatures = lib.mkDefault "client";
+    extraSetFlags = lib.optionals isExitNode [ "--advertise-exit-node" ];
   };
 
-  networking.nameservers = lib.mkBefore [ "100.100.100.100" ];
+  networking.nameservers = lib.mkBefore (
+    if isExitNode then
+      [ "100.100.100.100" ]
+    else
+      [
+        "100.100.100.100"
+        "8.8.8.8"
+        "1.1.1.1"
+      ]
+  );
   networking.search = [ "tailc09c73.ts.net" ];
 }

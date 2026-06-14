@@ -24,10 +24,18 @@ in
   _module.args.networkInterface = networkInterface;
 
   # Optional: if you want to override IP per-host
-  networking.interfaces.${networkInterface}.ipv4.addresses = [
-    {
-      address = "192.168.1.102";
-      prefixLength = 24;
-    }
-  ];
+  networking.interfaces.${networkInterface} = {
+    ipv4.addresses = [
+      {
+        address = "192.168.1.102";
+        prefixLength = 24;
+      }
+    ];
+    ipv6.addresses = [
+      {
+        address = "fdab:cd12:ef34::102";
+        prefixLength = 64;
+      }
+    ];
+  };
 }

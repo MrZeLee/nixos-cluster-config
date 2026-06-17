@@ -21,6 +21,8 @@ in
     ../../modules/networking.nix
     ../../modules/k3s_agent.nix
     ../../modules/tailscale.nix
+    ../../modules/zfs-storage.nix
+    ./zfs-pool.nix
     ../../secrets.nix
   ];
 
@@ -29,6 +31,7 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = name;
+  networking.hostId = "1de34942"; # Replace: run `head -c4 /dev/urandom | od -A none -t x4 | tr -d ' \n'` on n5pro
 
   # Allow unfree packages (claude-code)
   nixpkgs.config.allowUnfree = true;

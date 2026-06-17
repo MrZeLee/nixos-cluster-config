@@ -50,6 +50,12 @@ in
       prefixLength = 24;
     }
   ];
+  networking.interfaces.${networkInterface}.ipv6.addresses = [
+    {
+      address = "fdab:cd12:ef34::109";
+      prefixLength = 64;
+    }
+  ];
 
   # Time zone (keeping from original configuration)
   time.timeZone = "Europe/Lisbon";

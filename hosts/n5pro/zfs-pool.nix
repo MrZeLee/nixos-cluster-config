@@ -90,30 +90,9 @@
     fi
   '';
 
-  # Encrypted Longhorn dataset (passphrase) — created MANUALLY, ONCE.
-  # It is NOT created by the activation script above because keylocation=prompt
-  # needs the passphrase typed interactively, which an activation script cannot do.
-  #
-  #   sudo zfs create \
-  #     -o encryption=aes-256-gcm \
-  #     -o keyformat=passphrase \
-  #     -o keylocation=prompt \
-  #     -o recordsize=16K \
-  #     -o logbias=latency \
-  #     -o mountpoint=/mnt/longhorn-secure \
-  #     tank/longhorn-secure
-  #   sudo chmod 755 /mnt/longhorn-secure
-  #
-  # On every reboot this dataset stays LOCKED and unmounted (the unencrypted
-  # tank/longhorn auto-mounts and keeps serving its PVCs). To bring the encrypted
-  # volumes online, SSH in and run:
-  #
-  #   sudo zfs load-key tank/longhorn-secure   # prompts for the passphrase
-  #   sudo zfs mount tank/longhorn-secure
-  #
-  # While locked, /mnt/longhorn-secure has no longhorn-disk.cfg, so Longhorn marks
-  # that disk NotReady and will not write to it — safe. After unlock+mount Longhorn
-  # re-detects the disk (~1 min) and the encrypted PVCs come back.
+  # The encrypted tank/longhorn-secure dataset is created MANUALLY (it can't go in
+  # the activation script above: keylocation=prompt needs an interactive passphrase).
+  # See the full bootstrap runbook at the bottom of this file.
 
   # ZFS health monitoring script
   environment.etc."zfs-health-check.sh" = {
@@ -210,21 +189,47 @@
     };
   };
 
-  # One-time pool creation command
-  # Run this ONLY ONCE to create the initial pool.
+  # ════════════════════════════════════════════════════════════════════════════
+  # BOOTSTRAP RUNBOOK — run these in order. Steps 1-4 are ONE-TIME; step 5 repeats
+  # after every reboot (only when you want the encrypted volumes online).
+  # ════════════════════════════════════════════════════════════════════════════
   #
-  # Use stable /dev/disk/by-id/ paths (NOT /dev/sdX, which can change across
-  # reboots). List your drives first to find their by-id names:
-  #   ls -l /dev/disk/by-id/ | grep -v part
+  # 1. Create the pool (ONLY ONCE). Use stable /dev/disk/by-id/ paths (NOT /dev/sdX,
+  #    which can change across reboots). List your drives first:
+  #      ls -l /dev/disk/by-id/ | grep -v part
+  #    Then create it (replace DISK1..DISK5 with the by-id names):
+  #      sudo zpool create -f -o ashift=12 -o autoexpand=on -o autoreplace=on \
+  #        -O compression=lz4 -O atime=off -O xattr=sa -O normalization=formD \
+  #        tank \
+  #        mirror /dev/disk/by-id/DISK1 /dev/disk/by-id/DISK2 \
+  #        mirror /dev/disk/by-id/DISK3 /dev/disk/by-id/DISK4 \
+  #        spare  /dev/disk/by-id/DISK5
   #
-  # Then create the pool (replace DISK1..DISK5 with the by-id names):
-  #   sudo zpool create -f -o ashift=12 -o autoexpand=on -o autoreplace=on \
-  #     -O compression=lz4 -O atime=off -O xattr=sa -O normalization=formD \
-  #     tank \
-  #     mirror /dev/disk/by-id/DISK1 /dev/disk/by-id/DISK2 \
-  #     mirror /dev/disk/by-id/DISK3 /dev/disk/by-id/DISK4 \
-  #     spare  /dev/disk/by-id/DISK5
-
-  # After pool creation, run nixos-rebuild to create and configure datasets:
-  # sudo nixos-rebuild switch
+  # 2. Run nixos-rebuild to create + mount the UNencrypted datasets (tank/longhorn
+  #    at /mnt/longhorn) via the activation script above:
+  #      sudo nixos-rebuild switch
+  #
+  # 3. Create the ENCRYPTED dataset (prompts for a passphrase):
+  #      sudo zfs create \
+  #        -o encryption=aes-256-gcm \
+  #        -o keyformat=passphrase \
+  #        -o keylocation=prompt \
+  #        -o recordsize=16K \
+  #        -o logbias=latency \
+  #        -o mountpoint=/mnt/longhorn-secure \
+  #        tank/longhorn-secure
+  #      sudo chmod 755 /mnt/longhorn-secure
+  #
+  # 4. Register both paths in the Longhorn UI as disks:
+  #      /mnt/longhorn         tag "raid"        (unencrypted, survives reboots)
+  #      /mnt/longhorn-secure  tag "encrypted"   (locked until unlocked manually)
+  #    The longhorn / longhorn-encrypted StorageClasses (cluster repo) pin PVCs to
+  #    those tags.
+  #
+  # 5. AFTER EVERY REBOOT — the unencrypted dataset auto-mounts and its PVCs keep
+  #    working. The encrypted dataset stays LOCKED (Longhorn marks that disk
+  #    NotReady and won't write to it — safe). To bring the encrypted volumes back,
+  #    SSH in and unlock + mount; Longhorn re-detects the disk within ~1 min:
+  #      sudo zfs load-key tank/longhorn-secure   # prompts for the passphrase
+  #      sudo zfs mount tank/longhorn-secure
 }

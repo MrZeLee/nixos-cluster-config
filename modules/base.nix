@@ -20,5 +20,6 @@
     vim
     git
     fastfetch
+    tmux
   ];
 }

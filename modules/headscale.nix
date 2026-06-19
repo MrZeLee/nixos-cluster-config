@@ -22,7 +22,7 @@ _: {
     };
   };
 
-  # Generates /run/headscale/env from agenix secrets before headscale starts,
+  # Generates /run/headscale-env/env from agenix secrets before headscale starts,
   # same pattern as fleet-github-secret in k3s_server_fleet.nix.
   systemd.services.headscale-env = {
     description = "Generate headscale environment file from agenix secrets";
@@ -34,18 +34,18 @@ _: {
       RemainAfterExit = true;
     };
     script = ''
-      mkdir -p /run/headscale
+      mkdir -p /run/headscale-env
       DOMAIN=$(cat /run/agenix/headscale-domain)
-      BASE=$(echo "$DOMAIN" | cut -d. -f2-)
+      BASE="ts.$(echo "$DOMAIN" | cut -d. -f2-)"
       printf 'HEADSCALE_SERVER_URL=https://%s\nHEADSCALE_TLS_LETSENCRYPT_HOSTNAME=%s\nHEADSCALE_DNS_BASE_DOMAIN=%s\n' \
-        "$DOMAIN" "$DOMAIN" "$BASE" > /run/headscale/env
-      chmod 400 /run/headscale/env
+        "$DOMAIN" "$DOMAIN" "$BASE" > /run/headscale-env/env
+      chmod 400 /run/headscale-env/env
     '';
   };
 
   systemd.services.headscale.after = [ "headscale-env.service" ];
   systemd.services.headscale.requires = [ "headscale-env.service" ];
-  systemd.services.headscale.serviceConfig.EnvironmentFile = "/run/headscale/env";
+  systemd.services.headscale.serviceConfig.EnvironmentFile = "/run/headscale-env/env";
 
   networking.firewall.allowedTCPPorts = [
     80

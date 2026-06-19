@@ -44,18 +44,20 @@ in
   networking.usePredictableInterfaceNames = lib.mkForce true;
 
   # Configure specific IP for n5pro
-  networking.interfaces.${networkInterface}.ipv4.addresses = [
-    {
-      address = "192.168.1.109";
-      prefixLength = 24;
-    }
-  ];
-  networking.interfaces.${networkInterface}.ipv6.addresses = [
-    {
-      address = "fdab:cd12:ef34::109";
-      prefixLength = 64;
-    }
-  ];
+  networking.interfaces.${networkInterface} = {
+    ipv4.addresses = [
+      {
+        address = "192.168.1.109";
+        prefixLength = 24;
+      }
+    ];
+    ipv6.addresses = [
+      {
+        address = "fdab:cd12:ef34::109";
+        prefixLength = 64;
+      }
+    ];
+  };
 
   # Time zone (keeping from original configuration)
   time.timeZone = "Europe/Lisbon";

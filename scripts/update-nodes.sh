@@ -1,140 +1,113 @@
 #!/usr/bin/env bash
 set -euo pipefail
-HOSTS_DIR="../hosts"
-ACTION="switch"  # Default action
-DRY_RUN=false
-PARALLEL=false
+
+FLAKE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+HOSTS_DIR="${FLAKE_DIR}/hosts"
+TERRAFORM_DIR="${FLAKE_DIR}/terraform"
 SSH_USER="mrzelee"
+ACTION="switch"
+PARALLEL=false
+DRY_RUN=false
 
-# Define SSH host overrides
-declare -A SSH_OVERRIDES=(
-    ["node1"]="10.0.0.100"
-    ["node2"]="vpn.node2.internal"
-)
+# Discover host -> IP the same way update-public-keys.sh does
+declare -A HOST_IP=()
+for dir in "$HOSTS_DIR"/*/; do
+  host=$(basename "$dir")
+  config="${dir}configuration.nix"
+  [[ -f "$config" ]] || continue
 
-# Parse command line arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --dry-run)
-            DRY_RUN=true
-            shift
-            ;;
-        --boot|--switch|--test)
-            ACTION="${1#--}"
-            shift
-            ;;
-        --parallel)
-            PARALLEL=true
-            shift
-            ;;
-        --host)
-            SPECIFIC_HOST="$2"
-            shift 2
-            ;;
-        *)
-            echo "Unknown option: $1"
-            echo "Usage: $0 [--dry-run] [--boot|--switch|--test] [--parallel] [--host hostname]"
-            exit 1
-            ;;
-    esac
+  if [[ "$host" == "headscale" ]]; then
+    ip=$(cd "$TERRAFORM_DIR" && terraform output -raw server_ip 2>/dev/null || true)
+  else
+    ip=$(grep 'address =' "$config" | head -n1 | sed -E 's/.*address = "(.*)";/\1/')
+  fi
+
+  [[ -n "$ip" ]] && HOST_IP[$host]="$ip"
 done
 
-update_node() {
-    local hostname=$1
-    local ssh_target=$2
-    
-    echo "Updating $hostname at $ssh_target..."
-    
-    if [[ "$DRY_RUN" == true ]]; then
-        echo "Would run: ssh $SSH_USER@$ssh_target to rebuild"
-    else
-        # Copy the flake to the remote host
-        echo "Copying flake to $hostname..."
-        if ! ssh $SSH_USER@$ssh_target "mkdir -p /tmp/nixos-config"; then
-            echo "❌ Failed to create directory on $hostname"
-            return 1
-        fi
-        
-        # Use rsync with exclusions for efficiency
-        if ! rsync -av --delete \
-            --exclude='.git' \
-            --exclude='result' \
-            --exclude='result-*' \
-            --exclude='.direnv' \
-            ../ $SSH_USER@$ssh_target:/tmp/nixos-config/; then
-            echo "❌ Failed to copy files to $hostname"
-            return 1
-        fi
-        
-        # Run rebuild on the remote host
-        echo "Running nixos-rebuild on $hostname..."
-        if ssh $SSH_USER@$ssh_target "cd /tmp/nixos-config && sudo nixos-rebuild $ACTION --flake .#$hostname --show-trace"; then
-            echo "✅ Successfully updated $hostname"
-        else
-            echo "❌ Failed to update $hostname"
-            return 1
-        fi
-        
-        # Clean up (always try to clean up, even on failure)
-        ssh $SSH_USER@$ssh_target "rm -rf /tmp/nixos-config" || true
-    fi
+usage() {
+  echo "Usage: $0 [--dry-run] [--boot|--switch|--test] [--parallel] [host ...]"
+  echo "  No hosts specified: update all hosts"
+  exit 1
 }
 
-# Collect nodes to update
-declare -a NODES_TO_UPDATE=()
-
-for dir in "$HOSTS_DIR"/*; do
-    if [[ ! -d "$dir" ]]; then
-        continue
-    fi
-    
-    hostname=$(basename "$dir")
-    config="$dir/configuration.nix"
-    
-    # Skip if specific host requested and this isn't it
-    if [[ -n "${SPECIFIC_HOST:-}" && "$hostname" != "$SPECIFIC_HOST" ]]; then
-        continue
-    fi
-    
-    if [[ ! -f "$config" ]]; then
-        echo "Skipping $hostname: no configuration.nix"
-        continue
-    fi
-    
-    # Determine SSH target
-    if [[ -v SSH_OVERRIDES["$hostname"] ]]; then
-        ssh_target="${SSH_OVERRIDES[$hostname]}"
-    else
-        ip=$(grep 'address =' "$config" | head -n1 | sed -E 's/.*address = "(.*)";/\1/')
-        if [[ -z "$ip" ]]; then
-            echo "Skipping $hostname: no IP address found"
-            continue
-        fi
-        ssh_target="$ip"
-    fi
-    
-    NODES_TO_UPDATE+=("$hostname:$ssh_target")
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --dry-run)   DRY_RUN=true; shift ;;
+    --parallel)  PARALLEL=true; shift ;;
+    --boot|--switch|--test) ACTION="${1#--}"; shift ;;
+    --help)      usage ;;
+    --*)         echo "Unknown option: $1"; usage ;;
+    *)           break ;;
+  esac
 done
 
-# Check if any nodes to update
-if [[ ${#NODES_TO_UPDATE[@]} -eq 0 ]]; then
-    echo "No nodes found to update"
-    exit 0
+# Remaining args are host names; default to all
+if [[ $# -gt 0 ]]; then
+  targets=("$@")
+else
+  targets=("${!HOST_IP[@]}")
 fi
 
-# Update nodes
+rebuild_host() {
+  local host="$1"
+  local ip="${HOST_IP[$host]}"
+  local args=(
+    --flake "${FLAKE_DIR}#${host}"
+    --target-host "${SSH_USER}@${ip}"
+    --use-remote-sudo
+    --option always-allow-substitutes true
+  )
+
+  args+=(--build-host "${SSH_USER}@${ip}")
+
+  echo "[${host}] rebuilding → ${ip}"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "[${host}] DRY RUN: nixos-rebuild ${ACTION} ${args[*]}"
+    return 0
+  fi
+
+  if nixos-rebuild "$ACTION" "${args[@]}" 2>&1 | sed "s/^/[${host}] /"; then
+    echo "[${host}] done"
+  else
+    echo "[${host}] FAILED" >&2
+    return 1
+  fi
+}
+
+# Validate hosts
+for host in "${targets[@]}"; do
+  if [[ ! -v HOST_IP[$host] ]]; then
+    echo "Unknown host: ${host}" >&2
+    echo "Available: ${!HOST_IP[*]}" >&2
+    exit 1
+  fi
+done
+
+echo "Action: ${ACTION} | Hosts: ${targets[*]} | Parallel: ${PARALLEL}"
+
 if [[ "$PARALLEL" == true ]]; then
-    echo "Updating ${#NODES_TO_UPDATE[@]} nodes in parallel..."
-    for node_info in "${NODES_TO_UPDATE[@]}"; do
-        IFS=':' read -r hostname ssh_target <<< "$node_info"
-        update_node "$hostname" "$ssh_target" &
-    done
-    wait
-    echo "All updates completed."
+  pids=()
+  for host in "${targets[@]}"; do
+    rebuild_host "$host" &
+    pids+=($!)
+  done
+
+  failed=()
+  for i in "${!pids[@]}"; do
+    if ! wait "${pids[$i]}"; then
+      failed+=("${targets[$i]}")
+    fi
+  done
+
+  if [[ ${#failed[@]} -gt 0 ]]; then
+    echo "FAILED: ${failed[*]}" >&2
+    exit 1
+  fi
 else
-    echo "Updating ${#NODES_TO_UPDATE[@]} nodes sequentially..."
-    for node_info in "${NODES_TO_UPDATE[@]}"; do
-        IFS=':' read -r hostname ssh_target <<< "$node_info"
-        update_node "$hostname" "$ssh_target"
-    done
+  for host in "${targets[@]}"; do
+    rebuild_host "$host" || exit 1
+  done
 fi
+
+echo "Done."

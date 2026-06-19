@@ -24,7 +24,7 @@ _:
     };
     secrets.headscale-domain = {
       file = ./secrets/headscale-domain.age;
-      owner = "headscale";
+      owner = "root";
       mode = "0400";
     };
   };

@@ -3,6 +3,7 @@
 set -euo pipefail
 
 HOSTS_DIR="../hosts"
+TERRAFORM_DIR="../terraform"
 TMP_SYSTEM_KEYS=()
 SECRETS_FILE_TEMPLATE="secrets.nix.template"
 SECRETS_FILE="secrets.nix"
@@ -27,7 +28,11 @@ for dir in "$HOSTS_DIR"/*; do
     continue
   fi
 
-  ip=$(grep 'address =' "$config" | head -n1 | sed -E 's/.*address = "(.*)";/\1/')
+  if [[ "$host" == "headscale" ]]; then
+    ip=$(cd "$TERRAFORM_DIR" && terraform output -raw server_ip 2>/dev/null || true)
+  else
+    ip=$(grep 'address =' "$config" | head -n1 | sed -E 's/.*address = "(.*)";/\1/')
+  fi
   if [[ -z "$ip" ]]; then
     echo "Skipping $host: no IP address found"
     continue

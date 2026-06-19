@@ -1,3 +1,7 @@
 result
 .pre-commit-config.yaml
 .direnv/
+terraform/*.tfvars
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate*

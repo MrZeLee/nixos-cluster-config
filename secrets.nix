@@ -22,5 +22,15 @@ _:
       owner = "root";
       mode = "0400";
     };
+    secrets.headscale-domain = {
+      file = ./secrets/headscale-domain.age;
+      owner = "headscale";
+      mode = "0400";
+    };
+    secrets.headscale-email = {
+      file = ./secrets/headscale-email.age;
+      owner = "root";
+      mode = "0400";
+    };
   };
 }

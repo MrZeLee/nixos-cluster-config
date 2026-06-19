@@ -25,6 +25,10 @@
     git-hooks = {
       url = "github:cachix/git-hooks.nix";
     };
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = {
@@ -106,6 +110,10 @@
           format = "sd-x86_64-installer";
         };
         n5pro = {
+          system = "x86_64-linux";
+          format = "sd-x86_64-installer";
+        };
+        headscale = {
           system = "x86_64-linux";
           format = "sd-x86_64-installer";
         };

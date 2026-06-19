@@ -6,6 +6,7 @@
     ../../modules/users.nix
     ../../modules/headscale.nix
     ../../secrets.nix
+    ./disk.nix
   ];
 
   networking.hostName = name;

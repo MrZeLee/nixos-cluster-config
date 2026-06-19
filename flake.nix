@@ -45,6 +45,7 @@
       nixpkgs,
       nixos-hardware,
       agenix,
+      disko,
       nixos-generators,
       nixos-raspberrypi,
       git-hooks,
@@ -148,7 +149,8 @@
               })
               ./hosts/${name}/configuration.nix
               agenix.nixosModules.default
-            ];
+            ]
+            ++ (if name == "headscale" then [ disko.nixosModules.disko ] else [ ]);
           };
 
       overlays = [

@@ -25,10 +25,6 @@
     git-hooks = {
       url = "github:cachix/git-hooks.nix";
     };
-    disko = {
-      url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   nixConfig = {
@@ -45,7 +41,6 @@
       nixpkgs,
       nixos-hardware,
       agenix,
-      disko,
       nixos-generators,
       nixos-raspberrypi,
       git-hooks,
@@ -149,8 +144,7 @@
               })
               ./hosts/${name}/configuration.nix
               agenix.nixosModules.default
-            ]
-            ++ (if name == "headscale" then [ disko.nixosModules.disko ] else [ ]);
+            ];
           };
 
       overlays = [

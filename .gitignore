@@ -3,5 +3,4 @@ result
 .direnv/
 terraform/*.tfvars
 terraform/.terraform/
-terraform/.terraform.lock.hcl
 terraform/terraform.tfstate*

@@ -10,9 +10,4 @@
   ];
 
   networking.hostName = name;
-
-  myCluster.headscale = {
-    domain = "headscale.example.com";
-    email = "admin@example.com";
-  };
 }

@@ -27,10 +27,5 @@ _:
       owner = "headscale";
       mode = "0400";
     };
-    secrets.headscale-email = {
-      file = ./secrets/headscale-email.age;
-      owner = "root";
-      mode = "0400";
-    };
   };
 }

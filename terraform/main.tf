@@ -90,7 +90,7 @@ resource "cloudflare_record" "rest" {
   name    = "*"
   content = hcloud_server.headscale.ipv4_address
   type    = "A"
-  ttl     = 60
+  ttl     = 1
   proxied = true
 }
 

@@ -4,11 +4,19 @@ terraform {
       source  = "hetznercloud/hcloud"
       version = "~> 1.49"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4"
+    }
   }
 }
 
 provider "hcloud" {
   token = var.hcloud_token
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }
 
 resource "hcloud_ssh_key" "headscale" {
@@ -66,4 +74,13 @@ resource "hcloud_server" "headscale" {
     managed_by = "terraform"
     role       = "headscale"
   }
+}
+
+resource "cloudflare_record" "headscale" {
+  zone_id = var.cloudflare_zone_id
+  name    = "headscale"
+  content = hcloud_server.headscale.ipv4_address
+  type    = "A"
+  ttl     = 60
+  proxied = false
 }

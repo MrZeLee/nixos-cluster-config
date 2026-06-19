@@ -1,9 +1,4 @@
-{
-  lib,
-  pkgs,
-  ...
-}:
-{
+_: {
   services.headscale = {
     enable = true;
     address = "0.0.0.0";
@@ -27,21 +22,30 @@
     };
   };
 
-  # Overrides placeholder settings at runtime using agenix secrets,
-  # same pattern as tokenFile = "/run/agenix/k3s-token" in k3s modules.
-  systemd.services.headscale.serviceConfig = {
-    ExecStartPre = lib.mkBefore [
-      (pkgs.writeShellScript "headscale-env" ''
-        mkdir -p /run/headscale
-        DOMAIN=$(cat /run/agenix/headscale-domain)
-        BASE=$(echo "$DOMAIN" | cut -d. -f2-)
-        printf 'HEADSCALE_SERVER_URL=https://%s\nHEADSCALE_TLS_LETSENCRYPT_HOSTNAME=%s\nHEADSCALE_DNS_BASE_DOMAIN=%s\n' \
-          "$DOMAIN" "$DOMAIN" "$BASE" > /run/headscale/env
-        chmod 400 /run/headscale/env
-      '')
-    ];
-    EnvironmentFile = "/run/headscale/env";
+  # Generates /run/headscale/env from agenix secrets before headscale starts,
+  # same pattern as fleet-github-secret in k3s_server_fleet.nix.
+  systemd.services.headscale-env = {
+    description = "Generate headscale environment file from agenix secrets";
+    wantedBy = [ "headscale.service" ];
+    before = [ "headscale.service" ];
+    after = [ "agenix.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      mkdir -p /run/headscale
+      DOMAIN=$(cat /run/agenix/headscale-domain)
+      BASE=$(echo "$DOMAIN" | cut -d. -f2-)
+      printf 'HEADSCALE_SERVER_URL=https://%s\nHEADSCALE_TLS_LETSENCRYPT_HOSTNAME=%s\nHEADSCALE_DNS_BASE_DOMAIN=%s\n' \
+        "$DOMAIN" "$DOMAIN" "$BASE" > /run/headscale/env
+      chmod 400 /run/headscale/env
+    '';
   };
+
+  systemd.services.headscale.after = [ "headscale-env.service" ];
+  systemd.services.headscale.requires = [ "headscale-env.service" ];
+  systemd.services.headscale.serviceConfig.EnvironmentFile = "/run/headscale/env";
 
   networking.firewall.allowedTCPPorts = [
     80

@@ -5,14 +5,9 @@ _: {
     content = {
       type = "gpt";
       partitions = {
-        ESP = {
-          size = "512M";
-          type = "EF00";
-          content = {
-            type = "filesystem";
-            format = "vfat";
-            mountpoint = "/boot";
-          };
+        boot = {
+          size = "1M";
+          type = "EF02"; # BIOS boot partition for GRUB
         };
         root = {
           size = "100%";

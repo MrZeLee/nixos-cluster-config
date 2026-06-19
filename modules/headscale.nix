@@ -1,4 +1,5 @@
-_: {
+{ pkgs, ... }:
+{
   services.headscale = {
     enable = true;
     address = "127.0.0.1";
@@ -23,8 +24,47 @@ _: {
   };
 
   # Tailscale client so this machine is itself a node in its own headscale network.
-  # After deploy: tailscale up --login-server https://<headscale-domain>
   services.tailscale.enable = true;
+
+  # On boot: ensure the mrzelee user exists in headscale, create a short-lived
+  # pre-auth key, and join. Skips if tailscale is already connected.
+  systemd.services.tailscale-headscale-up = {
+    description = "Join this node to its own headscale network";
+    wantedBy = [ "multi-user.target" ];
+    after = [
+      "tailscaled.service"
+      "headscale.service"
+      "headscale-env.service"
+    ];
+    requires = [
+      "tailscaled.service"
+      "headscale.service"
+    ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    path = [
+      pkgs.jq
+      pkgs.headscale
+      pkgs.tailscale
+    ];
+    script = ''
+      if tailscale status --json 2>/dev/null | jq -e '.BackendState == "Running"' > /dev/null 2>&1; then
+        echo "tailscale already connected, skipping"
+        exit 0
+      fi
+      DOMAIN=$(cat /run/agenix/headscale-domain)
+      headscale users list --output json | jq -e '.[] | select(.name == "mrzelee")' > /dev/null 2>&1 \
+        || headscale users create mrzelee
+      KEY=$(headscale preauthkeys create --user mrzelee --expiration 1h --output json \
+        | jq -r '.key')
+      tailscale up \
+        --login-server "https://$DOMAIN" \
+        --auth-key "$KEY" \
+        --accept-routes
+    '';
+  };
 
   services.nginx = {
     enable = true;

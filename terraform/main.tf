@@ -84,3 +84,31 @@ resource "cloudflare_record" "headscale" {
   ttl     = 60
   proxied = false
 }
+
+resource "cloudflare_record" "rest" {
+  zone_id = var.cloudflare_zone_id
+  name    = "*"
+  content = hcloud_server.headscale.ipv4_address
+  type    = "A"
+  ttl     = 60
+  proxied = true
+}
+
+resource "cloudflare_record" "jellyfin" {
+  zone_id = var.cloudflare_zone_id
+  name    = "jellyfin"
+  content = hcloud_server.headscale.ipv4_address
+  type    = "A"
+  ttl     = 60
+  proxied = false
+}
+
+resource "cloudflare_record" "kubernetes" {
+  zone_id = var.cloudflare_zone_id
+  name    = "kubernetes"
+  content = hcloud_server.headscale.ipv4_address
+  type    = "A"
+  ttl     = 60
+  proxied = false
+}
+

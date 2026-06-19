@@ -14,7 +14,6 @@
       log.level = "info";
       logtail.enabled = false;
       tls_letsencrypt_hostname = "placeholder";
-      tls_letsencrypt_cache_dir = "/var/lib/headscale/cache";
       tls_letsencrypt_challenge_type = "HTTP-01";
       tls_letsencrypt_listen = ":80";
       dns = {

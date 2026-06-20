@@ -219,7 +219,7 @@
         {
           default = pkgs.mkShell {
             inherit (check) shellHook;
-            buildInputs = check.enabledPackages;
+            buildInputs = check.enabledPackages ++ [ pkgs.fzf ];
           };
         }
       );

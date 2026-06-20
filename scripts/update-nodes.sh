@@ -42,9 +42,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Remaining args are host names; default to all
+# Remaining args are host names; prompt with fzf if none given
 if [[ $# -gt 0 ]]; then
   targets=("$@")
+elif command -v fzf &>/dev/null; then
+  mapfile -t targets < <(printf '%s\n' "${!HOST_IP[@]}" | sort | fzf --multi --prompt="Select hosts (TAB to multi-select): " --header="ENTER to confirm, ESC to abort")
+  [[ ${#targets[@]} -gt 0 ]] || { echo "No hosts selected."; exit 0; }
 else
   targets=("${!HOST_IP[@]}")
 fi

@@ -6,7 +6,6 @@
 }:
 
 let
-  # Network interface for this host
   networkInterface = "eth0";
 in
 {
@@ -62,6 +61,29 @@ in
     unstable.libnvidia-container
   ];
 
+  environment.etc."nvidia-container-runtime/config.toml".text = ''
+    disable-require = true
+    supported-driver-capabilities = "compat32,compute,display,graphics,ngx,utility,video"
+
+    [nvidia-container-cli]
+    environment = []
+    ldconfig = "@${pkgs.glibc.bin}/bin/ldconfig"
+    load-kmods = true
+    no-cgroups = false
+    path = "${pkgs.unstable.libnvidia-container}/bin/nvidia-container-cli"
+
+    [nvidia-container-runtime]
+    mode = "legacy"
+    runtimes = ["runc"]
+
+    [nvidia-container-runtime-hook]
+    path = "${pkgs.unstable.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime-hook"
+    skip-mode-detection = false
+
+    [nvidia-ctk]
+    path = "${pkgs.unstable.nvidia-container-toolkit}/bin/nvidia-ctk"
+  '';
+
   services.k3s.containerdConfigTemplate = ''
     # Base K3s config
     {{ template "base" . }}
@@ -70,7 +92,7 @@ in
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia"]
       runtime_type = "io.containerd.runc.v2"
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."nvidia".options]
-      BinaryName = "${pkgs.unstable.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime"
+      BinaryName = "${pkgs.unstable.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime.legacy"
   '';
 
   # Pass network interface to modules

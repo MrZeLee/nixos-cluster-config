@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   services.headscale = {
     enable = true;
@@ -24,12 +24,12 @@
   };
 
   # Tailscale client so this machine is itself a node in its own headscale network.
-  # "client" enables ip_forward + loose rp_filter so kernel routes installed by
-  # tailscale (subnet routes from n5pro/raspb4) are actually usable by nginx.
-  services.tailscale = {
-    enable = true;
-    useRoutingFeatures = "client";
-  };
+  services.tailscale.enable = true;
+
+  # Force ip_forward on so nginx can proxy traffic to 192.168.1.0/24 via the
+  # tailscale subnet route. The base networking module sets this to 0 and wins
+  # over useRoutingFeatures, so mkForce is required.
+  boot.kernel.sysctl."net.ipv4.conf.all.forwarding" = lib.mkForce 1;
 
   # On boot: ensure the mrzelee user exists in headscale, create a short-lived
   # pre-auth key, and join. Skips if tailscale is already connected.

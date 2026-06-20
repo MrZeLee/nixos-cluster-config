@@ -24,7 +24,12 @@
   };
 
   # Tailscale client so this machine is itself a node in its own headscale network.
-  services.tailscale.enable = true;
+  # "client" enables ip_forward + loose rp_filter so kernel routes installed by
+  # tailscale (subnet routes from n5pro/raspb4) are actually usable by nginx.
+  services.tailscale = {
+    enable = true;
+    useRoutingFeatures = "client";
+  };
 
   # On boot: ensure the mrzelee user exists in headscale, create a short-lived
   # pre-auth key, and join. Skips if tailscale is already connected.

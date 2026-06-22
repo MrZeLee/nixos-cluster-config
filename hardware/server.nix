@@ -22,7 +22,10 @@
     "sd_mod"
   ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = [
+    "kvm-intel"
+    "raid0"
+  ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" = {
@@ -36,6 +39,41 @@
     options = [
       "fmask=0077"
       "dmask=0077"
+    ];
+  };
+
+  # RAID 0 stripe across the two 3.6 TB SSDs (Samsung 870 EVO + Crucial MX500),
+  # ~7.2 TB usable, LUKS-encrypted, used as a Longhorn disk. No local redundancy
+  # by design: Longhorn replicates across nodes, so these disks only hold
+  # redundant copies. NixOS assembles the array at boot but does NOT open the
+  # LUKS device or mount it — that is manual (see below), so boot/SSH never wait
+  # on a passphrase and K3s still starts normally. The Longhorn disk on this
+  # array simply stays unavailable until you unlock it.
+  #
+  # After every reboot, SSH in and run:
+  #   sudo cryptsetup luksOpen /dev/md0 longhorn-raid0
+  #   sudo mount /mnt/longhorn-server-raid0
+  #
+  # One-time provisioning (already done):
+  #   sudo cryptsetup luksFormat /dev/md0
+  #   sudo cryptsetup luksOpen /dev/md0 longhorn-raid0
+  #   sudo mkfs.ext4 -L longhorn-raid0 /dev/mapper/longhorn-raid0
+  boot.swraid = {
+    enable = true;
+    mdadmConf = ''
+      MAILADDR root
+      ARRAY /dev/md0 metadata=1.2 UUID=aa741cb2:05167c9e:5c1746f5:9afc442f
+    '';
+  };
+
+  # noauto + nofail: never block boot; mounted by hand after luksOpen.
+  fileSystems."/mnt/longhorn-server-raid0" = {
+    device = "/dev/mapper/longhorn-raid0";
+    fsType = "ext4";
+    options = [
+      "noatime"
+      "noauto"
+      "nofail"
     ];
   };
 

@@ -59,6 +59,7 @@ in
   environment.systemPackages = with pkgs; [
     unstable.nvidia-container-toolkit
     unstable.libnvidia-container
+    cryptsetup # manual unlock of the encrypted RAID0 Longhorn disk
   ];
 
   environment.etc."nvidia-container-runtime/config.toml".text = ''

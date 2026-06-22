@@ -20,7 +20,6 @@ in
     ../../modules/users.nix
     ../../modules/networking.nix
     ../../modules/k3s_agent.nix
-    ../../modules/tailscale.nix
     ../../modules/zfs-storage.nix
     ./zfs-pool.nix
     ../../secrets.nix

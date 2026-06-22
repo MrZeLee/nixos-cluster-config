@@ -1,5 +1,7 @@
 { pkgs, lib, ... }:
 {
+  imports = [ ./telegram-notify.nix ];
+
   system.stateVersion = "24.05";
 
   zramSwap.enable = true;

@@ -52,9 +52,18 @@ nix build .#packages.<system>.sd-image-<host>   # build an installer image
 ./scripts/update-nodes.sh --dry-run            # preview
 ./scripts/update-nodes.sh --switch raspb0      # one host
 ./scripts/update-nodes.sh --boot --parallel    # all hosts, on next boot
+
+# Power off k3s nodes gracefully, in a safe order (agents/storage → servers →
+# etcd-init last). fzf-select hosts if none given. --drain (local kubectl) only
+# for partial shutdowns; plain run relies on gracefulNodeShutdown:
+./scripts/shutdown-nodes.sh --dry-run          # preview the shutdown order
+./scripts/shutdown-nodes.sh                    # whole cluster, ordered poweroff
+./scripts/shutdown-nodes.sh --drain raspb6 n5pro  # subset: drain then off
 ```
 
 `./scripts/update-nodes.sh [--dry-run] [--boot|--switch|--test] [--parallel] [host…]`
+
+`./scripts/shutdown-nodes.sh [--drain] [--dry-run] [-y|--yes] [host…]`
 
 ## Gotchas
 

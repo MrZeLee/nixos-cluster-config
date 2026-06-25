@@ -1,6 +1,8 @@
 {
   config,
+  lib,
   pkgs,
+  utils,
   name,
   ...
 }:
@@ -98,6 +100,20 @@ in
 
   # Pass network interface to modules
   _module.args.networkInterface = networkInterface;
+
+  # Bind K3s's lifecycle to the encrypted RAID0 Longhorn disk so Longhorn never
+  # runs without it (mount defined in hardware/server.nix).
+  # - RequiresMountsFor adds Requires= + After= on the mount unit: K3s won't
+  #   start before the disk is unlocked + mounted, and is stopped before it
+  #   unmounts at shutdown — closing the boot/shutdown windows where Longhorn
+  #   could write replicas to a missing disk and corrupt them.
+  # - wantedBy the mount unit (replacing the default multi-user.target) makes
+  #   starting the mount pull K3s up, so scripts/unlock-storage.sh just runs
+  #   `systemctl start /mnt/longhorn-server-raid0` and K3s follows automatically.
+  systemd.services.k3s = {
+    unitConfig.RequiresMountsFor = "/mnt/longhorn-server-raid0";
+    wantedBy = lib.mkForce [ "${utils.escapeSystemdPath "/mnt/longhorn-server-raid0"}.mount" ];
+  };
 
   # Act as Tailscale exit node for the cluster
   services.tailscale.useRoutingFeatures = "server";

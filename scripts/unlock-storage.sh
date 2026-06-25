@@ -39,16 +39,21 @@ server_unlock() { # $1 = password
     printf '%s\n' "$1" | "${SSH[@]}" "${SSH_USER}@${SERVER_IP}" \
       'sudo cryptsetup luksOpen /dev/md0 longhorn-raid0' || return 1
   fi
+  # Start the mount unit (not bare `mount`): K3s is wantedBy this unit, so
+  # starting it both mounts the disk and pulls K3s up. Idempotent if mounted.
   "${SSH[@]}" "${SSH_USER}@${SERVER_IP}" \
-    'mountpoint -q /mnt/longhorn-server-raid0 || sudo mount /mnt/longhorn-server-raid0'
+    'sudo systemctl start /mnt/longhorn-server-raid0'
 }
 n5pro_unlock() { # $1 = password
   "${SSH[@]}" "${SSH_USER}@${N5PRO_IP}" 'sudo zpool list tank >/dev/null 2>&1 || sudo zpool import tank' || return 1
   if [ "$("${SSH[@]}" "${SSH_USER}@${N5PRO_IP}" 'sudo zfs get -H -o value keystatus tank 2>/dev/null')" != "available" ]; then
     printf '%s\n' "$1" | "${SSH[@]}" "${SSH_USER}@${N5PRO_IP}" 'sudo zfs load-key tank' || return 1
   fi
+  # `zfs mount -a` brings up the tank datasets; then start the ext4-on-zvol
+  # mount unit (not bare `mount`): K3s is wantedBy it, so this mounts the disk
+  # and pulls K3s up. Idempotent if already mounted.
   "${SSH[@]}" "${SSH_USER}@${N5PRO_IP}" \
-    'sudo zfs mount -a; mountpoint -q /mnt/longhorn-hdd-ext4 || sudo mount /mnt/longhorn-hdd-ext4'
+    'sudo zfs mount -a; sudo systemctl start /mnt/longhorn-hdd-ext4'
 }
 
 # --- figure out which hosts need unlocking -----------------------------------

@@ -26,6 +26,10 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # ASUS G20CB firmware hangs on warm reboot and won't re-POST (board has
+  # required a manual power-cycle). Force a PCI reset path on reboot.
+  boot.kernelParams = [ "reboot=pci" ];
+
   networking.hostName = name;
 
   # Allow unfree packages for NVIDIA drivers

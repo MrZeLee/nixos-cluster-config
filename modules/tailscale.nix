@@ -15,7 +15,12 @@ in
     # node (e.g. server) without a "TUN device busy" collision.
     interfaceName = "tailscale-host";
     useRoutingFeatures = lib.mkDefault "client";
-    extraSetFlags = lib.optionals isExitNode [ "--advertise-exit-node" ];
+    # Never let Tailscale's MagicDNS take over the host resolv.conf. With
+    # "Override Local DNS" on, Tailscale forces resolv.conf to *only*
+    # 100.100.100.100, so a broken MagicDNS upstream wipes out all host DNS
+    # with no public fallback. Keeping it off means networking.nameservers
+    # (below) stays authoritative, with 8.8.8.8 as a working fallback.
+    extraSetFlags = [ "--accept-dns=false" ] ++ lib.optionals isExitNode [ "--advertise-exit-node" ];
   };
 
   networking.nameservers = lib.mkBefore (

@@ -4,6 +4,14 @@
 
   system.stateVersion = "24.05";
 
+  # K3s nodes run many containers that each consume inotify instances/watches.
+  # The kernel defaults (128 instances) are easily exhausted, which crashes
+  # apps that use file watchers (e.g. Jellyfin's .NET FileSystemWatcher).
+  boot.kernel.sysctl = {
+    "fs.inotify.max_user_instances" = 8192;
+    "fs.inotify.max_user_watches" = 1048576;
+  };
+
   zramSwap.enable = true;
   zramSwap.memoryPercent = 150;
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Gracefully power off selected k3s nodes in an order that keeps the cluster healthy.
+# Gracefully power off (or --reboot) selected k3s nodes in an order that keeps the
+# cluster healthy.
 #
 # Both the server and agent modules set `services.k3s.gracefulNodeShutdown.enable`,
 # so a plain `systemctl poweroff` already makes kubelet cordon the node and
@@ -20,7 +21,7 @@
 #
 # headscale is a Hetzner VM, not a k3s node — it is intentionally not selectable here.
 #
-# Usage: ./scripts/shutdown-nodes.sh [--drain] [--dry-run] [-y|--yes] [host ...]
+# Usage: ./scripts/shutdown-nodes.sh [--drain] [--reboot] [--dry-run] [-y|--yes] [host ...]
 #   No hosts given: fzf multi-select (falls back to "all k3s nodes").
 set -uo pipefail
 
@@ -32,14 +33,16 @@ SSH=(ssh -o ConnectTimeout=8 -o BatchMode=yes)
 DRAIN=false
 DRY_RUN=false
 ASSUME_YES=false
+ACTION="poweroff" # or "reboot" with --reboot
 
 # Storage agents go last among agents so their volumes stay backed while other
 # pods terminate. Hostnames per repo conventions (n5pro = ZFS, server = LUKS).
 STORAGE_AGENTS=" server n5pro "
 
 usage() {
-  echo "Usage: $0 [--drain] [--dry-run] [-y|--yes] [host ...]"
+  echo "Usage: $0 [--drain] [--reboot] [--dry-run] [-y|--yes] [host ...]"
   echo "  --drain    cordon + drain each node first (LOCAL kubectl) — for partial shutdowns"
+  echo "  --reboot   reboot the node(s) instead of powering them off"
   echo "  --dry-run  print the plan, touch nothing"
   echo "  -y|--yes   skip the confirmation prompt"
   echo "  No hosts:  fzf multi-select (all k3s nodes if fzf is absent)"
@@ -49,6 +52,7 @@ usage() {
 while [[ $# -gt 0 ]]; do
   case $1 in
     --drain)   DRAIN=true; shift ;;
+    --reboot)  ACTION="reboot"; shift ;;
     --dry-run) DRY_RUN=true; shift ;;
     -y|--yes)  ASSUME_YES=true; shift ;;
     --help|-h) usage 0 ;;
@@ -56,6 +60,8 @@ while [[ $# -gt 0 ]]; do
     *)         break ;;
   esac
 done
+
+if [[ "$ACTION" == reboot ]]; then VERB="Reboot"; else VERB="Power off"; fi
 
 # --- Discover k3s nodes, their IP, role and shutdown tier --------------------
 # Tier: 0 compute agent | 1 storage agent | 2 server | 3 etcd-init server.
@@ -113,7 +119,7 @@ mapfile -t ordered < <(
 )
 
 # --- Show the plan + confirm -------------------------------------------------
-echo "Shutdown order (drain=${DRAIN}, dry-run=${DRY_RUN}):"
+echo "${VERB} order (drain=${DRAIN}, dry-run=${DRY_RUN}):"
 for host in "${ordered[@]}"; do
   case ${HOST_TIER[$host]} in
     0) label="agent" ;;
@@ -125,7 +131,7 @@ for host in "${ordered[@]}"; do
 done
 
 if [[ "$DRY_RUN" == false && "$ASSUME_YES" == false ]]; then
-  read -rp "Power off these ${#ordered[@]} node(s)? type 'yes': " ans
+  read -rp "${VERB} these ${#ordered[@]} node(s)? type 'yes': " ans
   [[ "$ans" == "yes" ]] || { echo "Aborted."; exit 0; }
 fi
 
@@ -155,28 +161,28 @@ for host in "${ordered[@]}"; do
   fi
 
   # Servers run embedded etcd. Stop k3s cleanly FIRST (bounded, SIGKILL fallback)
-  # so etcd closes its DB, then power off. Otherwise the last surviving member
-  # loses quorum, k3s never finishes (re)starting, and that stuck `start` job
-  # blocks the shutdown transition — `poweroff` silently does nothing. Agents
-  # don't run etcd, so gracefulNodeShutdown + a plain poweroff is enough.
+  # so etcd closes its DB, then power off / reboot. Otherwise the last surviving
+  # member loses quorum, k3s never finishes (re)starting, and that stuck `start`
+  # job blocks the transition — the action silently does nothing. Agents don't
+  # run etcd, so gracefulNodeShutdown + a plain poweroff/reboot is enough.
   if [[ "${HOST_ROLE[$host]}" == "server" ]]; then
-    poweroff_cmd='echo "stopping k3s (max 60s, then SIGKILL)…"; sudo systemctl stop k3s.service & sp=$!; for i in $(seq 1 60); do kill -0 $sp 2>/dev/null || break; sleep 1; done; if kill -0 $sp 2>/dev/null; then sudo systemctl kill -s SIGKILL k3s.service; wait $sp 2>/dev/null; fi; sync; sudo systemctl poweroff --no-block'
+    action_cmd="echo 'stopping k3s (max 60s, then SIGKILL)…'; sudo systemctl stop k3s.service & sp=\$!; for i in \$(seq 1 60); do kill -0 \$sp 2>/dev/null || break; sleep 1; done; if kill -0 \$sp 2>/dev/null; then sudo systemctl kill -s SIGKILL k3s.service; wait \$sp 2>/dev/null; fi; sync; sudo systemctl ${ACTION} --no-block"
   else
-    poweroff_cmd='sudo systemctl poweroff --no-block'
+    action_cmd="sudo systemctl ${ACTION} --no-block"
   fi
 
-  echo "[${host}] poweroff -> ${ip}"
+  echo "[${host}] ${ACTION} -> ${ip}"
   if [[ "$DRY_RUN" == true ]]; then
-    echo "[${host}] DRY RUN: ssh ${SSH_USER}@${ip} ${poweroff_cmd}"
+    echo "[${host}] DRY RUN: ssh ${SSH_USER}@${ip} ${action_cmd}"
     continue
   fi
 
   # A dropped connection here means the host is going down — that's success.
-  if timeout 100 "${SSH[@]}" "${SSH_USER}@${ip}" "$poweroff_cmd" 2>&1 |
+  if timeout 100 "${SSH[@]}" "${SSH_USER}@${ip}" "$action_cmd" 2>&1 |
        sed "s/^/[${host}] /"; then
-    echo "[${host}] powering down"
+    echo "[${host}] ${ACTION} issued"
   else
-    echo "[${host}] connection dropped / non-zero — host is powering down or already off"
+    echo "[${host}] connection dropped / non-zero — host is going down or already off"
   fi
 done
 
